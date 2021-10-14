@@ -12,5 +12,5 @@ passwd = os.getenv("MC_SERVER__RCON_PASSWD")
 
 def mc_command(command: str, *args: str):
     with Client(ip, port, passwd=passwd) as client:
-        response = client.run(f"/{command}", *args)
+        response = client.run(command, *args)
         return response

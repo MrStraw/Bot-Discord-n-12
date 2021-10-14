@@ -6,8 +6,8 @@ name = "pypi"
 [packages]
 "discord.py" = "*"
 python-dotenv = "*"
-fabric2 = "*"
 rcon = "*"
+mcstatus = "*"
 
 [dev-packages]
 
