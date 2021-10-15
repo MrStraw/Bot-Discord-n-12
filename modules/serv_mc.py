@@ -1,12 +1,13 @@
 from re import search
+from typing import Union
 
-from discord import Member, Guild, Role, Message, TextChannel
+from discord import Member, Guild, Role, Message, TextChannel, User
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot
-from discord.utils import get
 
+from contents.env import MC_SERVER__IP
 from utils import mc_command
-from utils.mc_list import mc_list, mc_nb_online
+from utils.mc_utils import mc_list, mc_nb_online, mc_get_raw
 from utils.nick_mc_to import nick_mc_to
 
 
@@ -24,7 +25,7 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
     @commands.command()
     async def mc(self, ctx, *raw_args):
         """ Lance une commande sur le serveur, dois être Douzien """
-        user: Member = ctx.author
+        user: Union[Member, User] = ctx.author
         message: Message = ctx.message
 
         if self.role_douzien not in user.roles:
@@ -41,15 +42,17 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
         # -------------------------------------- Commandes Valides -----------------------------------------------------
 
         if command == 'help':
-            await ctx.send(f"**HELP mc**\n"
-                           f"```"
-                           f"Commande résérvées au role {self.role_douzien.name}\n"
-                           f"Permet d'intéargir avec le serveur minecraft\n\n"
-                           "  raw : Lance la commande en brut. Exemple: 12.mc raw /list\n"
-                           "  say : Envoie un message au serveur (en signant par votre nom discord). "
+            await ctx.send(f"**__HELP mc__**\n"
+                           f"```md\n"
+                           f"# Commande résérvées au role {self.role_douzien.name}.\n"
+                           f"# Permet d'intéargir avec le serveur minecraft.\n\n"
+                           # "  raw  : Lance la commande en brut. Exemple: `12.mc raw /list`.\n"
+                           "  - say     : Envoie un message au serveur en signant par votre nom discord.\n"
+                           "  - list    : Donne la liste des personnes connéctées, donne leur nom discord idéalement.\n"
+                           "  - connect : Fiche d'aide pour ce connecter au serveur.\n"
                            "```")
 
-        elif command == 'raw':
+        elif command == 'raw' and (user.id == 180213164749619200 or user.id == 186131928598970368):
             command, args = raw_args[1], raw_args[2:]
             response = mc_command(command, *args)
             await ctx.send(response)
@@ -75,8 +78,15 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
                 s += f"\n  - **{user_discord.display_name}** ({player_name})"
             await ctx.send(s)
 
+        elif command == 'connect':
+            await ctx.send(f"```md\n"
+                           f"# Fiche pour l'aide à la connection au serveur :\n\n"
+                           f"  - ip      : {MC_SERVER__IP}:{mc_get_raw('hostport')}\n"
+                           f"  - version : {mc_get_raw('version')}\n"
+                           f"```")
+
         else:
-            await ctx.send(f"**Commande non reconnue**. faites ``2.mc help` "
+            await ctx.send(f"**Commande non reconnue**. faites `12.mc help` "
                            f"pour avoir la liste des commandes dédiées au serveur minecraft des douziens.")
 
     @tasks.loop(minutes=1)

@@ -13,3 +13,10 @@ def mc_list() -> list[str]:
 
 def mc_nb_online() -> int:
     return mc_server.query().players.online
+
+
+def mc_get_raw(key: str = None):
+    if key is None:
+        return mc_server.query().raw
+    else:
+        return mc_server.query().raw.get(key)
