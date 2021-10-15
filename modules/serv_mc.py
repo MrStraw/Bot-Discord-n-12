@@ -5,10 +5,10 @@ from discord import Member, Guild, Role, Message, TextChannel, User
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot
 
+from contents.douziens import douziens
 from contents.env import MC_SERVER__IP
 from utils import mc_command
 from utils.mc_utils import mc_list, mc_nb_online, mc_get_raw
-from utils.nick_mc_to import nick_mc_to
 
 
 class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
@@ -67,15 +67,14 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
             mc_command('say', en_tete, *args)
 
         elif command == 'list':
-            check_some_players_co = mc_nb_online()
-            if not check_some_players_co:
+            players_list = mc_list()
+            if not players_list:
                 await message.add_reaction('❌')
                 return
             s = ''
-            for player_name in mc_list():
-                discord_id = nick_mc_to(player_name)
-                user_discord: Member = self.guild.get_member(discord_id)
-                s += f"\n  - **{user_discord.display_name}** ({player_name})"
+            for player_name in players_list:
+                pseudo = self.mc_to_irl(player_name)
+                s += f"- {pseudo})\n"
             await ctx.send(s)
 
         elif command == 'connect':
@@ -92,3 +91,13 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
     @tasks.loop(minutes=1)
     async def check_online(self):
         await self.channel.edit(name=f"serv-mc_{mc_nb_online()}_sur_20")
+
+
+    def mc_to_irl(self, pseudo):
+        rep = douziens.get(pseudo, None)
+        if rep is None:
+            return f"{pseudo}"
+        else:
+            # pseudo_discord = self.guild.get_member(rep[1])
+            # return f"**{pseudo_discord}** ({pseudo})"
+            return f"**{rep[0]}** ({pseudo})"
