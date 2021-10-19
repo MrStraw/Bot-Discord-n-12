@@ -31,7 +31,7 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
         if self.role_douzien not in user.roles:
             await ctx.send(f"**Commande résérvée au rôle {self.role_douzien.name}.**")
             return
-        if not raw_args:
+        elif not raw_args:
             await ctx.send("**Utilisation :**\n"
                            "    12.mc command arg1 arg2 ... \n"
                            "    Faite _12.mc help_ pour avoir la lite des commandes. ")
@@ -73,8 +73,10 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
                 return
             s = ''
             for player_name in players_list:
-                pseudo = self.mc_to_irl(player_name)
-                s += f"- {pseudo})\n"
+                check_pseudo = douziens.get(player_name, None)
+                pseudo = f"**{self.guild.get_member(check_pseudo[1]).display_name}** ({player_name})" \
+                    if check_pseudo is not None else player_name
+                s += f"- {pseudo}\n"
             await ctx.send(s)
 
         elif command == 'connect':
@@ -84,20 +86,23 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
                            f"  - version : {mc_get_raw('version')}\n"
                            f"```")
 
+        # elif command == 'test':
+        #     await self.channel.edit(topic="ceci est un test")
+
         else:
             await ctx.send(f"**Commande non reconnue**. faites `12.mc help` "
                            f"pour avoir la liste des commandes dédiées au serveur minecraft des douziens.")
 
     @tasks.loop(minutes=1)
     async def check_online(self):
-        await self.channel.edit(name=f"serv-mc_{mc_nb_online()}_sur_20")
-
-
-    def mc_to_irl(self, pseudo):
-        rep = douziens.get(pseudo, None)
-        if rep is None:
-            return f"{pseudo}"
+        nb_players = mc_nb_online()
+        if not nb_players:
+            await self.channel.edit(topic="0 joueur connécté")
+        elif nb_players == 1:
+            player_name = mc_list()[0]
+            check_pseudo = douziens.get(player_name, None)
+            pseudo = f"**{self.guild.get_member(check_pseudo[1]).display_name}**" \
+                if check_pseudo is not None else player_name
+            await self.channel.edit(topic=f"1 joueur connécté: {pseudo}")
         else:
-            # pseudo_discord = self.guild.get_member(rep[1])
-            # return f"**{pseudo_discord}** ({pseudo})"
-            return f"**{rep[0]}** ({pseudo})"
+            await self.channel.edit(topic=f"{nb_players} joueurs connéctés")
