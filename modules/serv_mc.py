@@ -1,35 +1,31 @@
-from re import search
 from typing import Union
 
-from discord import Member, Guild, Role, Message, TextChannel, User
+from discord import Member, Message, User
 from discord.ext import commands, tasks
-from discord.ext.commands import Bot
 
+from bot12 import Bot12
 from contents.douziens import douziens
 from contents.env import MC_SERVER__IP
-from utils import mc_command
-from utils.mc_utils import mc_list, mc_nb_online, mc_get_raw
+from utils.mc_utils import mc_list, mc_nb_online, mc_get_raw, mc_command
 
 
 class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
-    def __init__(self, bot):
-        self.bot: Bot = bot
+    def __init__(self, bot: Bot12):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.guild: Guild = self.bot.get_guild(593145606839730206)  # serv épopée
-        self.channel: TextChannel = self.guild.get_channel(892309111700615230)  # channel mc
-        self.role_douzien: Role = self.guild.get_role(593152841552625870)
         self.check_online.start()
 
     @commands.command()
     async def mc(self, ctx, *raw_args):
         """ Lance une commande sur le serveur, dois être Douzien """
+        bot = self.bot
         user: Union[Member, User] = ctx.author
         message: Message = ctx.message
 
-        if self.role_douzien not in user.roles:
-            await ctx.send(f"**Commande résérvée au rôle {self.role_douzien.name}.**")
+        if bot.role_douzien not in user.roles:
+            await ctx.send(f"**Commande résérvée au rôle {bot.role_douzien.name}.**")
             return
         elif not raw_args:
             await ctx.send("**Utilisation :**\n"
@@ -44,7 +40,7 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
         if command == 'help':
             await ctx.send(f"**__HELP mc__**\n"
                            f"```md\n"
-                           f"# Commande résérvées au role {self.role_douzien.name}.\n"
+                           f"# Commande résérvées au role {bot.role_douzien.name}.\n"
                            f"# Permet d'intéargir avec le serveur minecraft.\n\n"
                            # "  raw  : Lance la commande en brut. Exemple: `12.mc raw /list`.\n"
                            "  - say     : Envoie un message au serveur en signant par votre nom discord.\n"
@@ -74,7 +70,7 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
             s = ''
             for player_name in players_list:
                 check_pseudo = douziens.get(player_name, None)
-                pseudo = f"**{self.guild.get_member(check_pseudo[1]).display_name}** ({player_name})" \
+                pseudo = f"**{bot.epopee.get_member(check_pseudo[1]).display_name}** ({player_name})" \
                     if check_pseudo is not None else player_name
                 s += f"- {pseudo}\n"
             await ctx.send(s)
@@ -86,8 +82,8 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
                            f"  - version : {mc_get_raw('version')}\n"
                            f"```")
 
-        # elif command == 'test':
-        #     await self.channel.edit(topic="ceci est un test")
+        elif command == 'test':
+            await self.bot.channel_test.send('test')
 
         else:
             await ctx.send(f"**Commande non reconnue**. faites `12.mc help` "
@@ -95,14 +91,15 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
 
     @tasks.loop(minutes=1)
     async def check_online(self):
+        bot = self.bot
         nb_players = mc_nb_online()
         if not nb_players:
-            await self.channel.edit(topic="0 joueur connécté")
+            await bot.channel_mc.edit(topic="0 joueur connécté")
         elif nb_players == 1:
             player_name = mc_list()[0]
             check_pseudo = douziens.get(player_name, None)
-            pseudo = f"**{self.guild.get_member(check_pseudo[1]).display_name}**" \
+            pseudo = f"**{bot.epopee.get_member(check_pseudo[1]).display_name}**" \
                 if check_pseudo is not None else player_name
-            await self.channel.edit(topic=f"1 joueur connécté: {pseudo}")
+            await bot.channel_mc.edit(topic=f"1 joueur connécté : {pseudo}")
         else:
-            await self.channel.edit(topic=f"{nb_players} joueurs connéctés")
+            await bot.channel_mc.edit(topic=f"{nb_players} joueurs connéctés")

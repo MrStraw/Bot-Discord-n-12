@@ -1,3 +1,2 @@
-from .start import Start
+from .common import Common
 from .serv_mc import ServMC
-from .test import Test

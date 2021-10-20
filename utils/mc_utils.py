@@ -1,8 +1,9 @@
 import os
 
 from mcstatus import MinecraftServer
+from rcon import Client
 
-from contents.env import MC_SERVER__IP, MC_SERVER__QUERY_PORT
+from contents.env import MC_SERVER__IP, MC_SERVER__QUERY_PORT, MC_SERVER__RCON_PASSWD, MC_SERVER__RCON_PORT
 
 mc_server = MinecraftServer.lookup(f"{MC_SERVER__IP}:{MC_SERVER__QUERY_PORT}")
 
@@ -20,3 +21,9 @@ def mc_get_raw(key: str = None):
         return mc_server.query().raw
     else:
         return mc_server.query().raw.get(key)
+
+
+def mc_command(command: str, *args: str):
+    with Client(MC_SERVER__IP, MC_SERVER__RCON_PORT, passwd=MC_SERVER__RCON_PASSWD) as client:
+        response = client.run(command, *args)
+        return response
