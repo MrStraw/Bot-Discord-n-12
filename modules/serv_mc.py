@@ -9,13 +9,11 @@ from contents.env import MC_SERVER__IP
 from utils.mc_utils import mc_list, mc_nb_online, mc_get_raw, mc_command
 
 
-class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
+class ServMC(commands.Cog):
     def __init__(self, bot: Bot12):
         self.bot = bot
-
-    @commands.Cog.listener()
-    async def on_ready(self):
         self.check_online.start()
+        print("Cog ServMC loaded")
 
     @commands.command()
     async def mc(self, ctx, *raw_args):
@@ -103,3 +101,7 @@ class ServMC(commands.Cog, name="Serveur minecraft des Douziens"):
             await bot.channel_mc.edit(topic=f"1 joueur connécté : {pseudo}")
         else:
             await bot.channel_mc.edit(topic=f"{nb_players} joueurs connéctés")
+
+
+def setup(bot):
+    bot.add_cog(ServMC(bot))

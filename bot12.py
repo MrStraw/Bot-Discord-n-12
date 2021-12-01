@@ -11,5 +11,6 @@ class Bot12(Bot):
 
         self.channel_mc: TextChannel = self.epopee.get_channel(892309111700615230)
         self.channel_test: TextChannel = self.epopee.get_channel(836906660211589130)
+        self.channel_admin: TextChannel = self.epopee.get_channel(599392002978742361)
 
         self.role_douzien: Role = self.epopee.get_role(593152841552625870)
