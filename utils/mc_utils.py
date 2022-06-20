@@ -1,11 +1,12 @@
 import os
 
-from mcstatus import MinecraftServer
-from rcon import Client
+from mcstatus import MinecraftServer, JavaServer
+from rcon.source import Client
 
 from contents.env import MC_SERVER__IP, MC_SERVER__QUERY_PORT, MC_SERVER__RCON_PASSWD, MC_SERVER__RCON_PORT
 
-mc_server = MinecraftServer.lookup(f"{MC_SERVER__IP}:{MC_SERVER__QUERY_PORT}")
+# mc_server = MinecraftServer.lookup(f"{MC_SERVER__IP}:{MC_SERVER__QUERY_PORT}")
+mc_server = JavaServer.lookup(f"{MC_SERVER__IP}:{MC_SERVER__QUERY_PORT}")
 
 
 def mc_list() -> list[str]:
